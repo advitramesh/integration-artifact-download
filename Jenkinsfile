@@ -3,6 +3,8 @@ pipeline {
 
 	//Configure the following environment variables before executing the Jenkins Job	
 	environment {
+		EMAIL = "${env.EMAIL}"
+		NAME = "${env.NAME}"
 		IntegrationFlowID = "${env.IntegrationFlowID}"
 		CPIHost = "${env.CPI_HOST}"
 		CPIOAuthHost = "${env.CPI_OAUTH_HOST}"
@@ -83,8 +85,8 @@ pipeline {
 					sh "rm -f ${tempfile}"
 						
 					dir(folder){
-						 sh 'git config user.email "${env.EMAIL}"'
-    						 sh 'git config user.name "${env.NAME}"'
+						 sh 'git config user.email env.EMAIL'
+    						 sh 'git config user.name env.NAME'
     						 sh 'git add .'
     						 sh 'git diff-index --quiet HEAD || git commit -am "Integration Artefacts update from CICD pipeline"'
 					}
