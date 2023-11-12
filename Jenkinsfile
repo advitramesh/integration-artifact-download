@@ -83,7 +83,10 @@ pipeline {
 					sh "rm -f ${tempfile}"
 						
 					dir(folder){
-						sh 'git add .'
+						 sh 'git config user.email "${env.EMAIL}"'
+    						 sh 'git config user.name "${env.NAME}"'
+    						 sh 'git add .'
+    						 sh 'git diff-index --quiet HEAD || git commit -am "Integration Artefacts update from CICD pipeline"'
 					}
 					println("Store integration artefact in Git")
 					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: env.GITCredentials ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
