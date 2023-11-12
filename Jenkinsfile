@@ -3,8 +3,8 @@ pipeline {
 
 	//Configure the following environment variables before executing the Jenkins Job	
 	environment {
-		EMAIL = "${env.EMAIL}"
-		NAME = "${env.NAME}"
+		EMAIL = "advit.ramesh@accenture.com"
+		NAME = "Advit Ramesh"
 		IntegrationFlowID = "${env.IntegrationFlowID}"
 		CPIHost = "${env.CPI_HOST}"
 		CPIOAuthHost = "${env.CPI_OAUTH_HOST}"
