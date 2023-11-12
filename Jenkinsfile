@@ -85,8 +85,8 @@ pipeline {
 					sh "rm -f ${tempfile}"
 						
 					dir(folder){
-						 sh 'git config user.email env.EMAIL'
-    						 sh 'git config user.name env.NAME'
+						 sh 'git config user.email "${env.EMAIL}"'
+    						 sh 'git config user.name "${env.NAME}"'
     						 sh 'git add .'
     						 sh 'git diff-index --quiet HEAD || git commit -am "Integration Artefacts update from CICD pipeline"'
 					}
