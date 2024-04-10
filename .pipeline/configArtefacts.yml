@@ -1,0 +1,14 @@
+steps:
+  - name : BNZ_API_ExhangeRates
+    cpiApiServiceKeyCredentialsId: SAPBTP_ServiceKey
+    integrationFlowId: BNZ_API_ExhangeRates
+    packageId : 'PanPac:FINANCE:BNZ-ExchangeRates'
+    integrationFlowVersion: 1.0.2
+    downloadPath: ./BNZ_API_ExhangeRates
+
+  - name : CreateSFTPFile
+    cpiApiServiceKeyCredentialsId: SAPBTP_ServiceKey
+    integrationFlowId: CreateSFTPFile
+    packageId: 'ZPLAYPEN'
+    integrationFlowVersion: 1.0.3
+    downloadPath: ./CreateSFTPFile
