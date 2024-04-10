@@ -3,5 +3,5 @@ steps:
     cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
     integrationFlowId: GET_CRM_Data
     packageId : 'ZESPRICanopySAPBW'
-    integrationFlowVersion: 1.0.2
+    integrationFlowVersion: 1.4
     downloadPath: ./ZESPRICanopySAPBW
