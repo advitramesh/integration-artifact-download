@@ -49,14 +49,14 @@ node() {
 						// Debug: Print the current working directory
         					sh 'pwd'
 						// Debug: List the contents of the download directory
-        					sh "ls -la /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/"
+        					sh "ls -la /var/lib/jenkins/workspace/SAP CPI Artifact Download/IntegrationContent/${integrationFlowId}/"
 						// Create directory for integration flow content
 						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Attempt to unzip
         					// Debug: Print the command being run
         					echo "Running unzip command:"
 						
-						sh "unzip -o -q /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						sh "unzip -o -q /var/lib/jenkins/workspace/SAP CPI Artifact Download/IntegrationContent/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Copy contents to current directory and add to Git
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
