@@ -48,8 +48,15 @@ node() {
   					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
 						// Debug: Print the current working directory
         					sh 'pwd'
-						// Debug: List the contents of the download directory
-        					sh "ls -la /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}"
+						def artifactPath = "/var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}"
+
+						// Execute the ls command and capture the output
+						def listOutput = sh(script: "ls -la ${artifactPath} || echo 'The specified directory does not exist or cannot be accessed.'", returnStdout: true).trim()
+
+						// Print the output of the ls command
+						echo "Contents of ${artifactPath}:\n${listOutput}"
+
+						
 						// Create directory for integration flow content
 						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Attempt to unzip
