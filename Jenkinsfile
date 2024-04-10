@@ -38,10 +38,26 @@ node() {
 					integrationFlowId = configOptions.integrationFlowId
 					packageId = step.packageId
 					echo " directory integrationflowid ${integrationFlowId}  "
+
+					// Debug: Check if unzip is available
+
+					sh 'which unzip || echo "unzip command not found"'
+
+					
 					// Clone the GitHub repository to a temporary directory
   					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
+						// Debug: Print the current working directory
+        					sh 'pwd'
+						// Debug: List the contents of the download directory
+        					sh "ls -la /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/"
+						// Create directory for integration flow content
 						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						// Attempt to unzip
+        					// Debug: Print the command being run
+        					echo "Running unzip command:"
+						
 						sh "unzip -o -q /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						// Copy contents to current directory and add to Git
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
 					}	
