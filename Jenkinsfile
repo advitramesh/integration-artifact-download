@@ -2,7 +2,7 @@
 
 node() {
     environment {
-        GITHUB_APP_CREDENTIAL = credentials('github')
+        GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
 	configOptions = ''
     }
     stage('Prepare') {
@@ -30,8 +30,8 @@ node() {
 				}
 				
 				stage('Commit and Push to GitHub') {
-					sh 'git config --global user.email "your-email@example.com"'
-                    			sh 'git config --global user.name "Jenkins"'
+					sh 'git config --global user.email "advit.ramesh@accenture.com"'
+                    			sh 'git config --global user.name "advitramesh"'
 
 					echo "Config Options in stage commit: ${configOptions}"
 			
@@ -46,9 +46,9 @@ node() {
 						sh "git add ."
 					}	
 					
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
+					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
-						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/Pan-Pac-Forest-Products/panpac-cpi-integrationArtefact-download.git' + ' HEAD:' + 'main')
+						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev/tree/main/IntegrationContent/IntegrationArtefacts' + ' HEAD:' + env.GITBranch)
 					}
 				}
 			}
