@@ -56,7 +56,7 @@ node() {
         					// Debug: Print the command being run
         					echo "Running unzip command:"
 						
-						sh "unzip -o -q /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						sh "unzip -o -q /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Copy contents to current directory and add to Git
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
