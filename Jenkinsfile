@@ -1,102 +1,57 @@
-pipeline {
-	agent any
+@Library('piper-lib-os') _
 
-	//Configure the following environment variables before executing the Jenkins Job	
-	environment {
-		EMAIL = "advit.ramesh@accenture.com"
-		NAME = "Advit Ramesh"
-		IntegrationFlowID = "${env.IntegrationFlowID}"
-		CPIHost = "${env.CPI_HOST}"
-		CPIOAuthHost = "${env.CPI_OAUTH_HOST}"
-		CPIOAuthCredentials = "${env.CPI_OAUTH_CRED}"	
-		GITRepositoryURL  = "${env.GIT_REPOSITORY_URL}"
-		GITCredentials = "${env.GIT_CRED}"
-		GITBranch = "${env.GIT_BRANCH_NAME}"
-		GITFolder = "IntegrationContent/IntegrationArtefacts"
-		GITComment = "Integration Artefacts update from CICD pipeline"
-   	}
-	
-	stages {
-		stage('download integration artefact and store it in Git') {
-			steps {
-			 	deleteDir()
-				script {
-					//clone repo 
-					checkout([
-						$class: 'GitSCM',
-						branches: [[name: env.GITBranch]],
-						doGenerateSubmoduleConfigurations: false,
-						extensions: [
-							[$class: 'RelativeTargetDirectory',relativeTargetDir: "."],
-							[$class: 'SparseCheckoutPaths',  sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path: env.GITFolder]]]
-						],
-						submoduleCfg: [],
-						userRemoteConfigs: [[
-							credentialsId: env.GITCredentials,
-							url: 'https://' + env.GITRepositoryURL
-						]]
-					])
-					
-					//get token
-					println("Request token");
-					def token;
-					try{
-					def getTokenResp = httpRequest acceptType: 'APPLICATION_JSON', 
-						authentication: env.CPIOAuthCredentials, 
-						contentType: 'APPLICATION_JSON', 
-						httpMode: 'POST', 
-						responseHandle: 'LEAVE_OPEN', 
-						timeout: 30, 
-						url: 'https://' + env.CPIOAuthHost + '/oauth/token?grant_type=client_credentials';
-					def jsonObjToken = readJSON text: getTokenResp.content
-					token = "Bearer " + jsonObjToken.access_token
-				   	} catch (Exception e) {
-						error("Requesting the oauth token for Cloud Integration failed:\n${e}")
-					}
-					//delete the old flow content so that only the latest content gets stored
-					dir(env.GITFolder + '/' + env.IntegrationFlowID){
-						deleteDir();
-					}
-					//download and extract artefact from tenant
-					println("Downloading artefact");
-					def tempfile = UUID.randomUUID().toString() + ".zip";
-					def cpiDownloadResponse = httpRequest acceptType: 'APPLICATION_ZIP', 
-						customHeaders: [[maskValue: false, name: 'Authorization', value: token]], 
-						ignoreSslErrors: false, 
-						responseHandle: 'LEAVE_OPEN', 
-						validResponseCodes: '100:399, 404',
-						timeout: 30,  
-						outputFile: tempfile,
-						url: 'https://' + env.CPIHost + '/api/v1/IntegrationDesigntimeArtifacts(Id=\''+ env.IntegrationFlowID + '\',Version=\'active\')/$value';
-					if (cpiDownloadResponse.status == 404){
-						//invalid Flow ID
-						error("Received http status code 404. Please check if the Artefact ID that you have provided exists on the tenant.");
-					}
-					
-					def disposition = cpiDownloadResponse.headers.toString();
-					def index=disposition.indexOf('filename')+9;
-					def lastindex=disposition.indexOf('.zip', index);
-					def filename=disposition.substring(index + 1, lastindex + 4);
-					def folder=env.GITFolder + '/' + filename.substring(0, filename.indexOf('.zip'));
-					unzip zipFile: tempfile, dir: folder
-					cpiDownloadResponse.close();
+node() {
+    environment {
+        GITHUB_APP_CREDENTIAL = credentials('github')
+	configOptions = ''
+    }
+    stage('Prepare') {
+        checkout scm
+        setupCommonPipelineEnvironment script: this
+    }
+    stage('Initialize') {
+        deleteDir()
+        checkout scm
+    }
+	stage ('Pipeline'){
+		script{
+			def config = readYaml file: './.pipeline/configArtefacts.yml'
+			for (def step in config.steps) {
+				def configOptions = [
+				cpiApiServiceKeyCredentialsId : step.cpiApiServiceKeyCredentialsId,
+  				integrationFlowId : step.integrationFlowId,
+				integrationFlowVersion : step.integrationFlowVersion,
+				downloadPath : step.downloadPath
+				]
 
-					//remove the zip
-					sh "rm -f ${tempfile}"
-						
-					dir(folder){
-						// sh 'git config user.email "advit.ramesh@accenture.com"'
-    						// sh 'git config user.name "Advit Ramesh"'
-    						 sh 'git add .'
-    						 sh 'git diff-index --quiet HEAD || git commit -am "Integration Artefacts update from CICD pipeline"'
+				echo "Config Options: ${configOptions}"
+				stage('IntegrationArtifactDownload Command') {
+					integrationArtifactDownload (configOptions)
+				}
+				
+				stage('Commit and Push to GitHub') {
+					sh 'git config --global user.email "your-email@example.com"'
+                    			sh 'git config --global user.name "Jenkins"'
+
+					echo "Config Options in stage commit: ${configOptions}"
+			
+					integrationFlowId = configOptions.integrationFlowId
+					packageId = step.packageId
+					echo " directory integrationflowid ${integrationFlowId}  "
+					// Clone the GitHub repository to a temporary directory
+  					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
+						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						sh "unzip -o -q /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
+						sh "git add ."
+					}	
+					
+					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
+						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
+						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/Pan-Pac-Forest-Products/panpac-cpi-integrationArtefact-download.git' + ' HEAD:' + 'main')
 					}
-					println("Store integration artefact in Git")
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: env.GITCredentials ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
-						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + env.GitComment + '\''
-						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + env.GITRepositoryURL + ' HEAD:' + env.GITBranch)
-					}				
 				}
 			}
 		}
-    }
+	}
 }
