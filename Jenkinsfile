@@ -49,7 +49,7 @@ node() {
 						// Debug: Print the current working directory
         					sh 'pwd'
 						// Debug: List the contents of the download directory
-        					sh "ls -la /var/lib/jenkins/workspace/SAP CPI Artifact Download/IntegrationContent/${integrationFlowId}/"
+        					sh "ls -la /var/lib/jenkins/workspace/SAP CPI Artifact Download/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Create directory for integration flow content
 						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Attempt to unzip
