@@ -53,6 +53,10 @@ node() {
 						// Execute the ls command and capture the output
 						def listOutput = sh(script: "ls -la ${artifactPath} || echo 'The specified directory does not exist or cannot be accessed.'", returnStdout: true).trim()
 
+						// Check the file type of the downloaded artifact
+    						echo "Checking file type of the downloaded artifact(s):"
+    						sh "file ${artifactPath}/* || echo 'No files to check.'"
+
 						// Print the output of the ls command
 						echo "Contents of ${artifactPath}:\n${listOutput}"
 
@@ -63,7 +67,7 @@ node() {
         					// Debug: Print the command being run
         					echo "Running unzip command:"
 						
-						sh "unzip -o -q /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+						sh "unzip -o -q /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}/*.zip -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 						// Copy contents to current directory and add to Git
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
