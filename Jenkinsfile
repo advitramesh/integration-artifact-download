@@ -63,6 +63,7 @@ node() {
         				def zipFilePath = "${zipFolder}/${zipFileName}"
         				echo "Unzipping ${zipFilePath} to ${destinationDir}"
         				unzip zipFile: zipFilePath, dir: destinationDir
+					sh "rm -f ${zipFilePath}"	
     						}
 					}
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
