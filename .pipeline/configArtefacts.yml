@@ -24,7 +24,7 @@ steps:
     cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
     integrationFlowId: Advit_Test_mapping
     packageId : 'ZESPRICICDPOC'
-    integrationFlowVersion: 1.0.2
+    integrationFlowVersion: 1.0.3
     downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZESPRICICDPOC/Advit_Test_mapping
 
     
