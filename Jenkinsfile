@@ -1,5 +1,10 @@
 @Library('piper-lib-os') _
 
+// Define the GitHub repository URL and branch as global variables
+
+def repoUrl = 'https://github.com/advitramesh/cpi-dev.git'
+def branchName = 'main'
+
 node() {
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
