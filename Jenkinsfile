@@ -4,10 +4,19 @@ node() {
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
 	configOptions = ''
+	def repoUrl = 'https://github.com/advitramesh/cpi-dev.git'
+    	def branchName = 'main'
+	    
     }
     stage('Prepare') {
         checkout scm
         setupCommonPipelineEnvironment script: this
+    }
+    // Clone the GitHub Repository
+    stage('Clone GitHub Repo') {
+        dir('gitRepo') {
+            sh "git clone -b ${branchName} ${repoUrl} ."
+        }
     }
     stage('Initialize') {
         deleteDir()
@@ -66,28 +75,14 @@ node() {
 
 					sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 
+					// Copy the downloaded iFlows to the cloned repository
+					stage('Copy iFlows to Git Repo') {
+                    				sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* gitRepo/"
+                			}	
+
 					// Stage the changes for commit
 					sh "git add ."
 
-					// Fetch the latest changes from the remote repository
-					sh 'git fetch --all'
-
-					// Check for the existence of 'origin/main'
-					def hasMainBranch = sh(script: "git branch -r | grep 'origin/main'", returnStatus: true) == 0
-
-					if (hasMainBranch) {
-    					// If 'origin/main' exists, reset the local 'main' branch to match it
-    					sh 'git checkout main || git checkout -b main origin/main'
-    					sh 'git reset --hard origin/main'
-					} else {
-    					// If 'origin/main' does not exist, create a new 'main' branch locally
-    					sh 'git checkout -b main'
-					}
-
-					// Add the IntegrationContent files to the commit
-					sh 'git add IntegrationContent/'
-
-					// Commit the changes, if there are any
 					sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
 	
 						
@@ -97,7 +92,7 @@ node() {
 
 								
 						//sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
-						sh 'git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git main'
+						sh 'git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}'
 					}
 				}
 			}
