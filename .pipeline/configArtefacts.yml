@@ -19,4 +19,13 @@ steps:
     packageId : 'ZespriCanopyLogin'
     integrationFlowVersion: 1.5
     downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZespriCanopyLogin/NewCanopy_User_Login_Entry
+
+  - name : ZESPRI_CICD_POC
+    cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
+    integrationFlowId: Advit_Test_mapping
+    packageId : 'ZESPRICICDPOC'
+    integrationFlowVersion: 1.0.1
+    downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZESPRICICDPOC/Advit_Test_mapping
+
+    
     
