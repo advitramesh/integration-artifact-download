@@ -76,7 +76,17 @@ node() {
                         sh 'git config --global user.name "advitramesh"'
                         sh "git add ."
                         sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
-                        sh "git checkout ${branchName}"
+
+
+                        // Ensure you are on the correct branch and that it exists
+                        sh "git fetch --all"
+                        def hasMainBranch = sh(script: "git branch -r | grep 'origin/${branchName}'", returnStatus: true) == 0
+                        if (hasMainBranch) {
+                            sh "git checkout ${branchName}"
+                        } else {
+                            sh "git checkout -b ${branchName}"
+                        }
+                        
 
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: gitCredentialsId, usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
                             sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
