@@ -67,25 +67,20 @@ node() {
     						}
 					}
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
+
+						// Switch to the branch you want to pull and push
+    						sh 'git checkout main'
+    
+    						// Pull latest changes from the remote repository
+    						sh 'git pull --rebase origin main'
+						
 						sh "git add ."
-						// Commit the changes
-            					sh 'git commit -m "Add latest iFlows for ${packageName}"'
+						
 					}	
 					
 					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 
-						// Configure git to handle divergences
-        					//sh 'git config pull.rebase false' // or 'true' if you prefer to rebase	
-
-						 // Stash any local changes
-        					//sh 'git stash'
-						
-						// Pull the latest changes from the remote repository
-    						//sh ('git pull https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@github.com/advitramesh/cpi-dev.git main')
-
-						// Re-apply the stashed changes
-        					//sh 'git stash pop'
-						
+								
 						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
 						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git' + ' HEAD:' + 'main')
 					}
