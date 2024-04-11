@@ -50,8 +50,17 @@ node() {
 					def destinationDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"	
 					sh "mkdir -p ${destinationDir}"
 
-						echo "Unzipping ${zipFilePath} to ${destinationDir}"
-						unzip zipFile: zipFilePath, dir: destinationDir
+					dir(zipFolder) {
+    					// List all zip files in the directory
+    					def zipFiles = sh(script: "ls *.zip", returnStdout: true).trim().split('\n')
+
+    					// Iterate over each file and unzip
+    					zipFiles.each { zipFileName ->
+        				def zipFilePath = "${zipFolder}/${zipFileName}"
+        				echo "Unzipping ${zipFilePath} to ${destinationDir}"
+        				unzip zipFile: zipFilePath, dir: destinationDir
+    						}
+					}
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
 					}	
