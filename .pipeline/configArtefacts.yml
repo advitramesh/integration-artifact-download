@@ -4,4 +4,4 @@ steps:
     integrationFlowId: GET_CRM_Data
     packageId : 'ZESPRICanopySAPBW'
     integrationFlowVersion: 1.4
-    downloadPath: ./ZESPRICanopySAPBW
+    downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZESPRICanopySAPBW/GET_CRM_Data
