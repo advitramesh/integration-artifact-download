@@ -41,12 +41,8 @@ node() {
 					// Clone the GitHub repository to a temporary directory
   					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
 
-                        		// Debug: Print the current working directory
-        				sh 'pwd'
-                        	       // Capture the output of 'pwd'
-					def zipFolder = ''							
-                        		zipFolder = sh(script: 'pwd', returnStdout: true).trim()
-
+                        		def zipFolder = configOptions.downloadPath							
+                        		
 					// List the contents of the zipFolder
 					echo "Listing contents of ${zipFolder}:"
 					sh "ls -la ${zipFolder}"
@@ -55,26 +51,26 @@ node() {
 					sh "mkdir -p ${destinationDir}"
 
 					dir(zipFolder) {
-    					// List all zip files in the directory
-    					def zipFiles = sh(script: "ls *.zip", returnStdout: true).trim().split('\n')
+    							// List all zip files in the directory
+    							def zipFiles = sh(script: "ls *.zip", returnStdout: true).trim().split('\n')
 
-    					// Iterate over each file and unzip
-    					zipFiles.each { zipFileName ->
-        				def zipFilePath = "${zipFolder}/${zipFileName}"
-        				echo "Unzipping ${zipFilePath} to ${destinationDir}"
-        				unzip zipFile: zipFilePath, dir: destinationDir
-					sh "rm -f ${zipFilePath}"	
+    							// Iterate over each file and unzip
+    							zipFiles.each { zipFileName ->
+        						def zipFilePath = "${zipFolder}/${zipFileName}"
+        						echo "Unzipping ${zipFilePath} to ${destinationDir}"
+        						unzip zipFile: zipFilePath, dir: destinationDir
+							sh "rm -f ${zipFilePath}"	
     						}
 					}
-						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
+					sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 
 						// Switch to the branch you want to pull and push
-    						sh 'git checkout main'
+    					sh 'git checkout main'
     
-    						// Pull latest changes from the remote repository
-    						sh 'git pull --rebase origin main'
+    					// Pull latest changes from the remote repository
+    					sh 'git pull --rebase origin main'
 						
-						sh "git add ."
+					sh "git add ."
 						
 					}	
 					
