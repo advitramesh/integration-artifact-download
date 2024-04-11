@@ -6,14 +6,14 @@ steps:
     integrationFlowVersion: 1.4
     downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZESPRICanopySAPBW/GET_CRM_Data
 
-    - name : ZESPRI Canopy SAP BW
+  - name : ZESPRI Canopy SAP BW
     cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
     integrationFlowId: GET_SAP_CDC_Data
     packageId : 'ZESPRICanopySAPBW'
     integrationFlowVersion: 1.5
     downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZESPRICanopySAPBW/GET_CRM_Data
 
-    - name : ZESPRI Canopy Login
+  - name : ZESPRI Canopy Login
     cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
     integrationFlowId: NewCanopy_User_Login_Entry
     packageId : 'ZespriCanopyLogin'
