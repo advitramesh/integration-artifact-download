@@ -46,8 +46,7 @@ node() {
 				}
 				
 				stage('Commit and Push to GitHub') {
-					sh 'git config --global user.email "advit.ramesh@accenture.com"'
-                    			sh 'git config --global user.name "advitramesh"'
+					
 
 					echo "Config Options in stage commit: ${configOptions}"
 			
@@ -91,21 +90,30 @@ node() {
                 			}	
 
 					// Stage the changes for commit
-					sh "git add ."
+ 					 stage('Stage the changes for commit') {
+        				dir('gitRepo') {
+						// Configure Git user
+						sh 'git config --global user.email "advit.ramesh@accenture.com"'
+                    				sh 'git config --global user.name "advitramesh"'
+					 
+						// Add and commit changes		
+						sh "git add ."
 
-					sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
-	
+						sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
+
+						// Ensure you are on the correct branch
+            					sh "git checkout ${branchName}"
+				
+						// Push changes		
+						withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 						
-					}	
-					
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
-
-								
 						//sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
 						sh 'git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}'
+						
+					
+						}
 					}
 				}
-			}
 		}
 	}
 }
