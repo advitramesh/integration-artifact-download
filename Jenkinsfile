@@ -3,7 +3,7 @@
 node() {
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
-	configOptions = ''
+        configOptions = ''
     }
     stage('Prepare') {
         checkout scm
@@ -13,72 +13,61 @@ node() {
         deleteDir()
         checkout scm
     }
-	stage ('Pipeline'){
-		script{
-			def config = readYaml file: './.pipeline/configArtefacts.yml'
-			for (def step in config.steps) {
-				def configOptions = [
-				cpiApiServiceKeyCredentialsId : step.cpiApiServiceKeyCredentialsId,
-  				integrationFlowId : step.integrationFlowId,
-				integrationFlowVersion : step.integrationFlowVersion,
-				downloadPath : step.downloadPath
-				]
+    stage ('Pipeline'){
+        script{
+            def config = readYaml file: './.pipeline/configArtefacts.yml'
+            for (def step in config.steps) {
+                def configOptions = [
+                    cpiApiServiceKeyCredentialsId: step.cpiApiServiceKeyCredentialsId,
+                    integrationFlowId: step.integrationFlowId,
+                    integrationFlowVersion: step.integrationFlowVersion,
+                    downloadPath: step.downloadPath
+                ]
 
-				echo "Config Options: ${configOptions}"
-				stage('IntegrationArtifactDownload Command') {
-					integrationArtifactDownload (configOptions)
-				}
-				
-				stage('Commit and Push to GitHub') {
-					sh 'git config --global user.email "advit.ramesh@accenture.com"'
-                    			sh 'git config --global user.name "advitramesh"'
+                echo "Config Options: ${configOptions}"
+                stage('IntegrationArtifactDownload Command') {
+                    integrationArtifactDownload(configOptions)
+                }
+                
+                stage('Commit and Push to GitHub') {
+                    sh 'git config --global user.email "advit.ramesh@accenture.com"'
+                    sh 'git config --global user.name "advitramesh"'
 
-					echo "Config Options in stage commit: ${configOptions}"
-			
-					integrationFlowId = configOptions.integrationFlowId
-					packageId = step.packageId
-					echo " directory integrationflowid ${integrationFlowId}  "
+                    echo "Config Options in stage commit: ${configOptions}"
 
-					// Debug: Check if unzip is available
+                    integrationFlowId = configOptions.integrationFlowId
+                    packageId = step.packageId
 
-					sh 'which unzip || echo "unzip command not found"'
+                    def downloadDir = "/var/lib/jenkins/workspace/SAPCPIArtifactDownload/${packageId}/${integrationFlowId}"
+                    def extractionDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
 
-					
-					// Clone the GitHub repository to a temporary directory
-  					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
-						// Debug: Print the current working directory
-        					sh 'pwd'
-						def artifactPath = "/var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}"
+                    // Create directory for integration flow content
+                    sh "mkdir -p ${extractionDir}"
 
-						// Execute the ls command and capture the output
-						def listOutput = sh(script: "ls -la ${artifactPath} || echo 'The specified directory does not exist or cannot be accessed.'", returnStdout: true).trim()
+                    // Check if the ZIP file exists and log the contents of the download directory
+                    sh "ls -la ${downloadDir} || echo 'The specified directory does not exist or cannot be accessed.'"
 
-						// Check the file type of the downloaded artifact
-    						echo "Checking file type of the downloaded artifact(s):"
-    						sh "file ${artifactPath}/* || echo 'No files to check.'"
+                    // Attempt to unzip the artifact
+                    try {
+                        // Use the Pipeline Utility Steps Plugin to unzip the file
+                        echo "Unzipping the artifact ZIP file"
+                        unzip zipFile: "${downloadDir}/*.zip", dir: extractionDir
+                    } catch (Exception e) {
+                        echo "Unzip step failed with exception: ${e.getMessage()}"
+                    }
 
-						// Print the output of the ls command
-						echo "Contents of ${artifactPath}:\n${listOutput}"
+                    // Change into the extraction directory and add all unzipped files to the Git repo
+                    dir(extractionDir) {
+                        sh "git add ."
 
-						
-						// Create directory for integration flow content
-						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
-						// Attempt to unzip
-        					// Debug: Print the command being run
-        					echo "Running unzip command:"
-						
-						sh "unzip -o -q /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/${packageId}/${integrationFlowId}/*.zip -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
-						// Copy contents to current directory and add to Git
-						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
-						sh "git add ."
-					}	
-					
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
-						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
-						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev/tree/main/IntegrationContent/IntegrationArtefacts' + ' HEAD:' + env.GITBranch)
-					}
-				}
-			}
-		}
-	}
+                        // Commit and push if there are changes
+                        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'GITHUB_APP_CREDENTIAL', usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
+                            sh 'git diff-index --quiet HEAD || git commit -am "Integration Artifacts update from CI/CD pipeline"'
+                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@github.com/advitramesh/cpi-dev.git HEAD:${env.GITBranch}"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
