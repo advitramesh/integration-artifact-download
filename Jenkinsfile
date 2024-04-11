@@ -89,6 +89,9 @@ node() {
                         
 
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: gitCredentialsId, usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
+                            // Fetch and rebase (or merge) changes from remote
+                            sh "git fetch origin ${branchName}"
+                            sh "git rebase origin/${branchName}"
                             sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://', '')} ${branchName}"
                         }
                     }
