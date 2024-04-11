@@ -39,7 +39,8 @@ node() {
                     cpiApiServiceKeyCredentialsId: step.cpiApiServiceKeyCredentialsId,
                     integrationFlowId: step.integrationFlowId,
                     integrationFlowVersion: step.integrationFlowVersion,
-                    downloadPath: step.downloadPath
+                    downloadPath: step.downloadPath,
+                    packageId: step.packageId
                 ]
 
                 echo "Config Options: ${configOptions}"
