@@ -1,72 +1,80 @@
 @Library('piper-lib-os') _
 
 node() {
-    // Environment variables
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
-        configOptions = ''
+	configOptions = ''
     }
-
     stage('Prepare') {
         checkout scm
         setupCommonPipelineEnvironment script: this
     }
-
     stage('Initialize') {
         deleteDir()
         checkout scm
     }
+	stage ('Pipeline'){
+		script{
+			def config = readYaml file: './.pipeline/configArtefacts.yml'
+			for (def step in config.steps) {
+				def configOptions = [
+				cpiApiServiceKeyCredentialsId : step.cpiApiServiceKeyCredentialsId,
+  				integrationFlowId : step.integrationFlowId,
+				integrationFlowVersion : step.integrationFlowVersion,
+				downloadPath : step.downloadPath
+				]
 
-    stage('Pipeline') {
-        script {
-            def config = readYaml file: './.pipeline/configArtefacts.yml'
-            for (def step in config.steps) {
-                def configOptions = [
-                    cpiApiServiceKeyCredentialsId : step.cpiApiServiceKeyCredentialsId,
-                    integrationFlowId : step.integrationFlowId,
-                    integrationFlowVersion : step.integrationFlowVersion,
-                    downloadPath : step.downloadPath
-                ]
+				echo "Config Options: ${configOptions}"
+				stage('IntegrationArtifactDownload Command') {
+					integrationArtifactDownload (configOptions)
+				}
+				
+				stage('Commit and Push to GitHub') {
+					sh 'git config --global user.email "advit.ramesh@accenture.com"'
+                    			sh 'git config --global user.name "advitramesh"'
 
-                echo "Config Options: ${configOptions}"
-                
-                stage('IntegrationArtifactDownload Command') {
-                    integrationArtifactDownload (configOptions)
-                }
+					echo "Config Options in stage commit: ${configOptions}"
+			
+					integrationFlowId = configOptions.integrationFlowId
+					packageId = step.packageId
+					echo " directory integrationflowid ${integrationFlowId}  "
+					// Clone the GitHub repository to a temporary directory
+  					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
 
-                stage('Unzip and Prepare for Commit') {
-                    // Assuming the download path is the workspace root
-                    def downloadDir = "${WORKSPACE}"
-                    def artifactZipPath = "${downloadDir}/${step.integrationFlowId}.zip"
+                        		// Debug: Print the current working directory
+        				sh 'pwd'
+                        	       // Capture the output of 'pwd'
+					def zipFolder = ''							
+                        		zipFolder = sh(script: 'pwd', returnStdout: true).trim()
 
-                    // Unzip the artifact
-                    if (fileExists(artifactZipPath)) {
-                        unzip zipFile: artifactZipPath, dir: downloadDir
-                    } else {
-                        echo "Artifact .zip not found in ${artifactZipPath}"
-                    }
+					// List the contents of the zipFolder
+					echo "Listing contents of ${zipFolder}:"
+					sh "ls -la ${zipFolder}"
+					
+					def destinationDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"	
+					sh "mkdir -p ${destinationDir}"
 
-                    // Move the artifacts to the desired location
-                    def localArtifactPath = "IntegrationContent/IntegrationArtefacts/${step.packageId}/${step.integrationFlowId}"
-                    sh "mkdir -p ${localArtifactPath}"
-                    sh "cp -r ${downloadDir}/* ${localArtifactPath}"
+					dir(zipFolder) {
+    					// List all zip files in the directory
+    					def zipFiles = sh(script: "ls *.zip", returnStdout: true).trim().split('\n')
 
-                    // Stage the changes
-                    sh "git add ${localArtifactPath}"
-                }
-
-                stage('Commit and Push to GitHub') {
-                    // Configure Git
-                    sh 'git config --global user.email "advit.ramesh@accenture.com"'
-                    sh 'git config --global user.name "advitramesh"'
-
-                    // Commit and push
-                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: GITHUB_APP_CREDENTIAL, usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
-                        sh 'git diff-index --quiet HEAD || git commit -am "Add integration artifacts"'
-                        sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@github.com/advitramesh/cpi-dev.git HEAD:main"
-                    }
-                }
-            }
-        }
-    }
+    					// Iterate over each file and unzip
+    					zipFiles.each { zipFileName ->
+        				def zipFilePath = "${zipFolder}/${zipFileName}"
+        				echo "Unzipping ${zipFilePath} to ${destinationDir}"
+        				unzip zipFile: zipFilePath, dir: destinationDir
+    						}
+					}
+						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
+						sh "git add ."
+					}	
+					
+					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: GITHUB_APP_CREDENTIAL ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
+						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
+						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev' + ' HEAD:' + 'main')
+					}
+				}
+			}
+		}
+	}
 }
