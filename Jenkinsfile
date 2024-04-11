@@ -89,10 +89,21 @@ node() {
                         
 
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: gitCredentialsId, usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
-                            // Fetch and rebase (or merge) changes from remote
+
+
+                            // Check if the remote branch exists
+                            def remoteBranchExists = sh(script: "git ls-remote --heads ${repoUrl} ${branchName} | wc -l", returnStdout: true).trim()
+                            if (remoteBranchExists == "0") {
+                            // Create a new remote branch if it does not exist
+                            sh "git push https://\${GIT_AUTHOR_NAME}:\${GIT_PASSWORD}@${repoUrl.remove('https://')} ${branchName}"
+                            } else {
+                            // Fetch and rebase changes from remote
                             sh "git fetch origin ${branchName}"
                             sh "git rebase origin/${branchName}"
-                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://', '')} ${branchName}"
+            
+                            // Push changes
+                            sh "git push https://\${GIT_AUTHOR_NAME}:\${GIT_PASSWORD}@${repoUrl.remove('https://')} ${branchName}"
+                            }
                         }
                     }
                 }
