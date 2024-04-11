@@ -64,8 +64,10 @@ node() {
 					}
 					sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 
+					sh 'git fetch --all'
+					sh 'git branch -a'	
 						// Switch to the branch you want to pull and push
-    					sh 'git checkout main'
+    					sh 'git checkout -b main origin/main'
     
     					// Pull latest changes from the remote repository
     					sh 'git pull --rebase origin main'
