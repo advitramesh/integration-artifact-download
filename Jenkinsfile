@@ -46,7 +46,7 @@ node() {
                         	       // Capture the output of 'pwd'
 					def zipFolder = ''							
                         		zipFolder = sh(script: 'pwd', returnStdout: true).trim()
-					def zipFilePath = "${zipFolder}.zip"	
+					
 					def destinationDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"	
 					sh "mkdir -p ${destinationDir}"
 
