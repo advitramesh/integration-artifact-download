@@ -84,7 +84,10 @@ node() {
 
 					// Copy the downloaded iFlows to the cloned repository
 					stage('Copy iFlows to Git Repo') {
-                    				sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* gitRepo/"
+                    				dir('gitRepo') {
+            					// Copy iFlows to the 'gitRepo/' directory
+            							sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/ZESPRICanopySAPBW/GET_CRM_Data/* ."
+        					}
                 			}	
 
 					// Stage the changes for commit
