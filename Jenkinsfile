@@ -64,18 +64,25 @@ node() {
 					}
 
 
-					// Fetch all branches and tags from the remote repository
-						sh 'git fetch --all'
+					sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 
-					// Check out the remote master branch to local master
-						sh 'git checkout -b master origin/master'
-	
-					// Add all changes to Git
-						sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
-						sh "git add ."
+					// Stage the changes for commit
+					sh "git add ."
 
-					// Commit the changes if there are any
-						sh 'git diff-index --quiet HEAD || git commit -am "Commit files"'
+					// Fetch the latest changes from the remote repository
+					sh 'git fetch --all'
+
+					// Check if the 'main' branch exists locally and create it if it doesn't, tracking the remote 'main'
+					sh 'git checkout -b main || git checkout main'
+
+					// Reset the local 'main' branch to match the remote 'main' branch, this will sync it
+					sh 'git reset --hard origin/main'
+
+					// Add the IntegrationContent files to the commit
+					sh 'git add IntegrationContent/'
+
+					// Commit the changes, if there are any
+					sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
 	
 						
 					}	
@@ -84,7 +91,7 @@ node() {
 
 								
 						//sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
-						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git' + ' HEAD:' + 'main')
+						sh 'git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git main'
 					}
 				}
 			}
