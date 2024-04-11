@@ -98,7 +98,7 @@ node() {
                             sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://')} ${branchName}"
                             } else {
                             // Fetch and rebase changes from remote
-                            sh "git fetch origin ${branchName}"
+                            sh "git fetch https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://')} ${branchName}"
                             sh "git rebase origin/${branchName}"
             
                             // Push changes
