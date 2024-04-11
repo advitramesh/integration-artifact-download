@@ -4,7 +4,7 @@
 
 def repoUrl = 'https://github.com/advitramesh/cpi-dev.git'
 def branchName = 'main'
-
+def gitCredentialsId = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
 node() {
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
@@ -19,7 +19,10 @@ node() {
     // Clone the GitHub Repository
     stage('Clone GitHub Repo') {
         dir('gitRepo') {
-            sh "git clone -b ${branchName} ${repoUrl} ."
+            withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                // Use the credentials to clone
+                sh "git clone -b ${branchName} https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl.replace('https://', '')} ."
+            }
         }
     }
     stage('Initialize') {
