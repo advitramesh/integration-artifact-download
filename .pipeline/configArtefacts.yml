@@ -17,6 +17,6 @@ steps:
     cpiApiServiceKeyCredentialsId: sapcpidevServiceKeyCredentials
     integrationFlowId: NewCanopy_User_Login_Entry
     packageId : 'ZespriCanopyLogin'
-    integrationFlowVersion: 1.4
+    integrationFlowVersion: 1.5
     downloadPath: /var/lib/jenkins/workspace/SAPCPIArtifactDownload/IntegrationContent/ZespriCanopyLogin/NewCanopy_User_Login_Entry
     
