@@ -4,7 +4,7 @@
 
 def repoUrl = 'https://github.com/advitramesh/cpi-dev.git'
 def branchName = 'main'
-def gitCredentialsId = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
+def gitCredentialsId = '613fd18c-2469-433c-bca6-22c48b4eb948'
 node() {
     environment {
         GITHUB_APP_CREDENTIAL = credentials('613fd18c-2469-433c-bca6-22c48b4eb948')
