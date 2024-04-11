@@ -73,7 +73,7 @@ node() {
 					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 						
 						// Pull the latest changes from the remote repository
-    						sh "git pull https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@'+ 'github.com/advitramesh/cpi-dev.git' + main"
+    						sh ('git pull https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@'+ 'github.com/advitramesh/cpi-dev.git' + 'main')
 						
 						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
 						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git' + ' HEAD:' + 'main')
