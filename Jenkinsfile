@@ -89,7 +89,7 @@ node() {
                         
 
                         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: gitCredentialsId, usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {
-                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
+                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://', '')} ${branchName}"
                         }
                     }
                 }
