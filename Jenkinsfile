@@ -69,7 +69,7 @@ node() {
 						sh "git add ."
 					}	
 					
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'GITHUB_APP_CREDENTIAL' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
+					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: env.GITHUB_APP_CREDENTIAL ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
 						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev/tree/main/IntegrationContent/IntegrationArtefacts.git' + ' HEAD:' + 'main')
 					}
