@@ -30,7 +30,7 @@ node() {
 				}
 				
 				stage('Commit and Push to GitHub') {
-					sh 'git config --global user.email "advit.ramesh@gmail.com"'
+					sh 'git config --global user.email "advit.ramesh@accenture.com"'
                     			sh 'git config --global user.name "advitramesh"'
 
 					echo "Config Options in stage commit: ${configOptions}"
