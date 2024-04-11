@@ -72,11 +72,17 @@ node() {
 					// Fetch the latest changes from the remote repository
 					sh 'git fetch --all'
 
-					// Check if the 'main' branch exists locally and create it if it doesn't, tracking the remote 'main'
-					sh 'git checkout -b main || git checkout main'
+					// Check for the existence of 'origin/main'
+					def hasMainBranch = sh(script: "git branch -r | grep 'origin/main'", returnStatus: true) == 0
 
-					// Reset the local 'main' branch to match the remote 'main' branch, this will sync it
-					sh 'git reset --hard origin/main'
+					if (hasMainBranch) {
+    					// If 'origin/main' exists, reset the local 'main' branch to match it
+    					sh 'git checkout main || git checkout -b main origin/main'
+    					sh 'git reset --hard origin/main'
+					} else {
+    					// If 'origin/main' does not exist, create a new 'main' branch locally
+    					sh 'git checkout -b main'
+					}
 
 					// Add the IntegrationContent files to the commit
 					sh 'git add IntegrationContent/'
