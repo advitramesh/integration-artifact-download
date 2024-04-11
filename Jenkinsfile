@@ -1,7 +1,7 @@
 @Library('piper-lib-os') _
 
 // Define the GitHub repository URL and branch as global variables
-def repoUrl = 'https://github.com/advitramesh/cpi-dev.git'
+def repoUrl = 'github.com/advitramesh/cpi-dev.git'
 def branchName = 'main'
 def gitCredentialsId = '613fd18c-2469-433c-bca6-22c48b4eb948'
 
@@ -21,7 +21,7 @@ node() {
         dir('gitRepo') {
             withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                 // Use the credentials to clone
-                sh "git clone -b ${branchName} https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl.replace('https://', '')} ."
+                sh "git clone -b ${branchName} https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl} ."
             }
         }
     }
@@ -95,14 +95,14 @@ node() {
                             def remoteBranchExists = sh(script: "git ls-remote --heads ${repoUrl} ${branchName} | wc -l", returnStdout: true).trim()
                             if (remoteBranchExists == "0") {
                             // Create a new remote branch if it does not exist
-                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://')} ${branchName}"
+                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             } else {
                             // Fetch and rebase changes from remote
-                            sh "git fetch https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://')} ${branchName}"
+                            sh "git fetch https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             sh "git rebase origin/${branchName}"
             
                             // Push changes
-                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl.replace('https://')} ${branchName}"
+                            sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             }
                         }
                     }
