@@ -31,7 +31,7 @@ node() {
 				
 				stage('Commit and Push to GitHub') {
 					sh 'git config --global user.email "your-email@example.com"'
-                    sh 'git config --global user.name "Jenkins"'
+                    			sh 'git config --global user.name "Jenkins"'
 
 					echo "Config Options in stage commit: ${configOptions}"
 			
@@ -41,13 +41,17 @@ node() {
 					// Clone the GitHub repository to a temporary directory
   					dir("IntegrationContent/${packageId}/${integrationFlowId}"){
 
-                        	// Debug: Print the current working directory
+                        		// Debug: Print the current working directory
         				sh 'pwd'
-                        // Capture the output of 'pwd'
-                        unzipFolder = sh(script: 'pwd', returnStdout: true).trim()
-                        
-						sh "mkdir -p /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
-						sh "unzip -o -q /var/lib/jenkins/workspace/IntegrationArtifactDownload/${integrationFlowId}/* -d /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
+                        	       // Capture the output of 'pwd'
+					def zipFolder = ''							
+                        		zipFolder = sh(script: 'pwd', returnStdout: true).trim()
+					def zipFilePath = "${zipFolder}.zip"	
+					def destinationDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"	
+					sh "mkdir -p ${destinationDir}"
+
+						echo "Unzipping ${zipFilePath} to ${destinationDir}"
+						unzip zipFile: zipFilePath, dir: destinationDir
 						sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 						sh "git add ."
 					}	
