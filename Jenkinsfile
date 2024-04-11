@@ -39,8 +39,7 @@ node() {
                     cpiApiServiceKeyCredentialsId: step.cpiApiServiceKeyCredentialsId,
                     integrationFlowId: step.integrationFlowId,
                     integrationFlowVersion: step.integrationFlowVersion,
-                    downloadPath: step.downloadPath,
-                    packageId: step.packageId
+                    downloadPath: step.downloadPath
                 ]
 
                 echo "Config Options: ${configOptions}"
@@ -48,6 +47,8 @@ node() {
                     integrationArtifactDownload(configOptions)
                 }
 
+                def packageId = step.packageId 
+                
                 stage('Unzip iFlows') {
                     def zipFolder = configOptions.downloadPath
                     def destinationDir = "/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}"
