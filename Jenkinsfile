@@ -62,24 +62,28 @@ node() {
 							sh "rm -f ${zipFilePath}"	
     						}
 					}
-					sh "cp -r	/var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
 
-					sh 'git fetch --all'
-					sh 'git branch -a'	
-						// Switch to the branch you want to pull and push
-    					sh 'git checkout -b main origin/main'
-    
-    					// Pull latest changes from the remote repository
-    					sh 'git pull --rebase origin main'
-						
-					sh "git add ."
+
+					// Fetch all branches and tags from the remote repository
+						sh 'git fetch --all'
+
+					// Check out the remote master branch to local master
+						sh 'git checkout -b master origin/master'
+	
+					// Add all changes to Git
+						sh "cp -r /var/lib/jenkins/workspace/IntegrationContent/${packageId}/${integrationFlowId}/* ."
+						sh "git add ."
+
+					// Commit the changes if there are any
+						sh 'git diff-index --quiet HEAD || git commit -am "Commit files"'
+	
 						
 					}	
 					
 					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '613fd18c-2469-433c-bca6-22c48b4eb948' ,usernameVariable: 'GIT_AUTHOR_NAME', passwordVariable: 'GIT_PASSWORD']]) {  
 
 								
-						sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
+						//sh 'git diff-index --quiet HEAD || git commit -am ' + '\'' + 'commit files' + '\''
 						sh('git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@' + 'github.com/advitramesh/cpi-dev.git' + ' HEAD:' + 'main')
 					}
 				}
