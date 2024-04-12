@@ -33,7 +33,7 @@ node() {
 
     stage('Pipeline') {
         script {
-            def config = readYaml file: './.pipeline/configArtifacts.yml'
+            def config = readYaml file: 'projectPiper/.pipeline/configArtifacts.yml'
             for (def step in config.steps) {
                 def configOptions = [
                     cpiApiServiceKeyCredentialsId: step.cpiApiServiceKeyCredentialsId,
