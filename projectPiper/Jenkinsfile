@@ -71,30 +71,41 @@ node() {
                 }
 
                 stage('Stage the changes for commit') {
-                    dir('gitRepo') {
-                        sh 'git config user.email "advit.ramesh@accenture.com"'
-                        sh 'git config user.name "advitramesh"'
-                        sh "git add ."
-                        sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
-
-                        withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                            // Ensure you are on the correct branch and that it exists
-                            sh "git fetch --all"
-                            def remoteBranchExists = sh(script: "git branch -r | grep 'origin/${branchName}'", returnStatus: true) == 0
-                            if (remoteBranchExists) {
-                                sh "git checkout ${branchName}"
-                            } else {
-                                sh "git checkout -b ${branchName}"
+                 dir('gitRepo') {
+                            // Configure user for this repository
+                            sh 'git config user.email "advit.ramesh@accenture.com"'
+                            sh 'git config user.name "advitramesh"'
+                    
+                            // Stage any changes
+                            sh "git add ."
+                    
+                            // Commit if there are any changes
+                            sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
+                    
+                            withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                                // Fetch the branch
+                                sh "git fetch origin ${branchName}"
+                    
+                                // Check if the branch exists on the remote
+                                def remoteBranchExists = sh(script: "git ls-remote --heads origin ${branchName}", returnStdout: true).trim()
+                    
+                                // Create the branch on the remote if it doesn't exist
+                                if (remoteBranchExists.isEmpty()) {
+                                    sh "git push --set-upstream origin ${branchName}"
+                                } else {
+                                    // Check out the branch locally
+                                    sh "git checkout ${branchName}"
+                    
+                                    // Merge changes from the remote branch, use --ff-only to avoid merging divergent branches
+                                    sh "git merge --ff-only origin/${branchName}"
+                                }
+                    
+                                // Push changes, no need to force if we're just adding new commits on top
+                                sh "git push origin ${branchName}"
                             }
-
-                            // Rebase the local changes on top of the remote branch
-                            sh "git rebase origin/${branchName}"
-
-                            // Push changes to the remote
-                            sh "git push --force-with-lease origin ${branchName}"
                         }
                     }
-                }
+
             }
         }
     }
