@@ -83,29 +83,31 @@ node() {
                             sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
                     
                             withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                                // Fetch all branches from the remote to ensure the local repository is up-to-date
-                                sh "git fetch --all"
+                                    // Fetch all information from the origin to ensure we have all the necessary data.
+                                    sh "git fetch origin"
                             
-                                // Check if the branch exists on the remote
-                                def remoteBranchExists = sh(script: "git ls-remote --heads https://\${GIT_USERNAME}:\${GIT_PASSWORD}@${repoUrl} ${branchName}", returnStdout: true).trim()
-                            
-                                if (remoteBranchExists.isEmpty()) {
-                                    // If the branch does not exist on the remote, create it locally and push it
-                                    sh "git checkout -b ${branchName}"
-                                    sh "git push --set-upstream https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
-                                } else {
-                                    // If the branch exists, checkout the branch
-                                    sh "git checkout ${branchName}"
-                                    // Merge changes from the remote branch
-                                    sh "git merge origin/${branchName} --ff-only"
+                                    // Check if the 'main' branch exists on the remote and switch to it.
+                                    // The 'git rev-parse --verify' command returns 0 if the branch exists, or 128 if it does not.
+                                    def mainBranchExists = sh(script: "git rev-parse --verify origin/main", returnStatus: true) == 0
+                                    if (mainBranchExists) {
+                                        // If main branch exists remotely, check it out and reset our local main to match the remote main branch
+                                        sh "git checkout -B main origin/main"
+                                    } else {
+                                        // If the main branch does not exist remotely, create it locally
+                                        sh "git checkout -b main"
+                                    }
+                                
+                                    // Add and commit changes, ensuring there's something to commit.
+                                    sh "git add ."
+                                    sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
+                                
+                                    // Now push the main branch back to origin, setting the upstream if it's a new branch.
+                                    if (!mainBranchExists) {
+                                        sh "git push --set-upstream origin main"
+                                    } else {
+                                        sh "git push origin main"
+                                    }
                                 }
-                            
-                                // Stage and commit changes
-                                sh "git add ."
-                                sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
-                            
-                                // Push changes to the remote branch
-                                sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             }
                         }
                     }
