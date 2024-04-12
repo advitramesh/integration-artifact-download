@@ -98,9 +98,16 @@ node() {
                             sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             } else {
                             // Fetch and rebase changes from remote
-                            sh "git fetch https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
-                            sh "git rebase origin/${branchName}"
-            
+                            //sh "git fetch https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
+
+
+                             // Fetch the latest changes from the remote
+                            sh 'git fetch origin main'    
+                                
+                            //sh "git rebase origin/${branchName}"
+
+                            sh 'git merge origin/main' // Use this for merge                    
+                                
                             // Push changes
                             sh "git push https://${GIT_AUTHOR_NAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             }
