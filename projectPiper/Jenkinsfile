@@ -83,25 +83,29 @@ node() {
                             sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
                     
                             withCredentials([usernamePassword(credentialsId: gitCredentialsId, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                                // Fetch the branch
-                                sh "git fetch origin ${branchName}"
-                    
+                                // Fetch all branches from the remote to ensure the local repository is up-to-date
+                                sh "git fetch --all"
+                            
                                 // Check if the branch exists on the remote
-                                def remoteBranchExists = sh(script: "git ls-remote --heads origin ${branchName}", returnStdout: true).trim()
-                    
-                                // Create the branch on the remote if it doesn't exist
+                                def remoteBranchExists = sh(script: "git ls-remote --heads https://\${GIT_USERNAME}:\${GIT_PASSWORD}@${repoUrl} ${branchName}", returnStdout: true).trim()
+                            
                                 if (remoteBranchExists.isEmpty()) {
-                                    sh "git push --set-upstream origin ${branchName}"
+                                    // If the branch does not exist on the remote, create it locally and push it
+                                    sh "git checkout -b ${branchName}"
+                                    sh "git push --set-upstream https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                                 } else {
-                                    // Check out the branch locally
+                                    // If the branch exists, checkout the branch
                                     sh "git checkout ${branchName}"
-                    
-                                    // Merge changes from the remote branch, use --ff-only to avoid merging divergent branches
-                                    sh "git merge --ff-only origin/${branchName}"
+                                    // Merge changes from the remote branch
+                                    sh "git merge origin/${branchName} --ff-only"
                                 }
-                    
-                                // Push changes, no need to force if we're just adding new commits on top
-                                sh "git push origin ${branchName}"
+                            
+                                // Stage and commit changes
+                                sh "git add ."
+                                sh 'git diff-index --quiet HEAD || git commit -am "Commit integration content updates"'
+                            
+                                // Push changes to the remote branch
+                                sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@${repoUrl} ${branchName}"
                             }
                         }
                     }
